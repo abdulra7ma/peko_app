@@ -1,5 +1,7 @@
 import tkinter as tk
-from tkinter import Text
+from tkinter import Text, Canvas
+from tkinter import filedialog
+from PIL import Image, ImageTk
 
 
 class PekoApp(tk.Tk):
@@ -23,6 +25,12 @@ class HomePage(tk.Frame):
         tk.Label(self, text="This is the start page").pack(
             side="top", fill="x", pady=10
         )
+        self.uni_logo = Image.open("images/ala-too_logo.jpeg")
+        self.uni_logo = ImageTk.PhotoImage(image=self.uni_logo)
+        tk.Label(
+            self,
+            image=self.uni_logo,
+        ).pack()
         tk.Button(
             self,
             text="Open page one",
@@ -61,14 +69,35 @@ class GlassFilterPage(tk.Frame):
     def __init__(self, master):
         tk.Frame.__init__(self, master)
         tk.Label(self, text="Snapchat glasses filter").pack(
-            side="top", fill="x", pady=10
+            side="top", fill="x", pady=20
         )
+        self.configure()
         tk.Button(
             self,
             text="Return to Home page",
             command=lambda: master.switch_frame(HomePage),
         ).pack()
 
+    def configure(self):
+        self.canvas = Canvas(self, width=650, height=350)
+        self.canvas.pack()
+
+        self.open_image_button = tk.Button(
+            self,
+            text="open image",
+            command=self.open_image_and_display_in_canvas,
+        ).pack()
+
+    def open_image_and_display_in_canvas(self):
+        path = filedialog.askopenfilename()
+
+        print(path)
+
+        if path:
+            self.image = Image.open(path)
+            self.image = self.image.resize((500, 490), Image.LANCZOS)
+            self.image = ImageTk.PhotoImage(self.image)
+            self.canvas.create_image(0, 0, image=self.image, anchor="nw")
 
 class CopyRightPage(tk.Frame):
     """
@@ -93,9 +122,10 @@ class CopyRightPage(tk.Frame):
 
     @property
     def copyright(self):
-        copyright = "\u00A9"
+        copyright_symbol = "\u00A9"
+
         return f"""
-        {copyright} Dear Reader,
+        {copyright_symbol} Dear Reader,
         Thank you for giving your
         Love and Support to PythonGuides.
         PythonGuides is now available on 
