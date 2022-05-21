@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import Text
 
 
 class PekoApp(tk.Tk):
@@ -32,6 +33,11 @@ class HomePage(tk.Frame):
             text="glasses filter",
             command=lambda: master.switch_frame(GlassFilterPage),
         ).pack()
+        tk.Button(
+            self,
+            text="Copyright",
+            command=lambda: master.switch_frame(CopyRightPage),
+        ).pack()
 
 
 class PageOne(tk.Frame):
@@ -62,6 +68,42 @@ class GlassFilterPage(tk.Frame):
             text="Return to Home page",
             command=lambda: master.switch_frame(HomePage),
         ).pack()
+
+
+class CopyRightPage(tk.Frame):
+    """
+    Peko app copyright page.
+    """
+
+    def __init__(self, master):
+        tk.Frame.__init__(self, master)
+        tk.Label(self, text="Copyright Page").pack(
+            side="top", fill="x", pady=10
+        )
+        # copy text area
+        text_box = Text(self, height=12, width=45)
+        text_box.pack(expand=True)
+        text_box.insert("end", self.copyright)
+        # text_box.config(state="disabled")
+        tk.Button(
+            self,
+            text="Return to Home page",
+            command=lambda: master.switch_frame(HomePage),
+        ).pack()
+
+    @property
+    def copyright(self):
+        copyright = "\u00A9"
+        return f"""
+        {copyright} Dear Reader,
+        Thank you for giving your
+        Love and Support to PythonGuides.
+        PythonGuides is now available on 
+        YouTube with the same name.
+
+        Thanks & Regards,
+        Team PythonGuides
+        """
 
 
 if __name__ == "__main__":
