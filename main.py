@@ -43,6 +43,12 @@ class HomePage(tk.Frame):
         ).pack()
         tk.Button(
             self,
+            text="black&white filter",
+            command=lambda: master.switch_frame(BlackAndWhitePage),
+        ).pack()
+        
+        tk.Button(
+            self,
             text="Copyright",
             command=lambda: master.switch_frame(CopyRightPage),
         ).pack()
@@ -114,6 +120,49 @@ class GlassFilterPage(tk.Frame):
             self.filter_image = glasses_filter(self.path)
             print(self.filter_image)
 
+
+class BlackAndWhitePage(tk.Frame):
+    """
+    Applies black & white filter to the given image
+    """
+
+    def __init__(self, master):
+        tk.Frame.__init__(self, master)
+        tk.Label(self, text="Black & White filter").pack(
+            side="top", fill="x", pady=20
+        )
+        self.configure()
+        tk.Button(
+            self,
+            text="Return to Home page",
+            command=lambda: master.switch_frame(HomePage),
+        ).pack()
+        self.image = None
+        self.filter_image = None
+
+    def configure(self):
+        self.canvas = Canvas(self, width=650, height=350)
+        self.canvas.pack()
+
+        self.open_image_button = tk.Button(
+            self,
+            text="open image",
+            command=self.open_image_and_display_in_canvas,
+        ).pack()
+        self.apply_filter_button = tk.Button(
+            self,
+            text="apply filter",
+        ).pack()
+
+    def open_image_and_display_in_canvas(self):
+        MAX_SIZE = (590, 350)
+        self.path = filedialog.askopenfilename()
+
+        if self.path:
+            self.image = Image.open(self.path)
+            self.image.thumbnail(MAX_SIZE)
+            self.image = ImageTk.PhotoImage(self.image)
+            self.canvas.create_image(0, 1, image=self.image, anchor="nw")
 
 class CopyRightPage(tk.Frame):
     """
