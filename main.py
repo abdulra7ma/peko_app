@@ -1,6 +1,6 @@
 import tkinter as tk
-from tkinter import Text, Canvas
-from tkinter import filedialog
+from tkinter import Canvas, Text, filedialog, messagebox
+
 from PIL import Image, ImageTk
 
 
@@ -77,6 +77,8 @@ class GlassFilterPage(tk.Frame):
             text="Return to Home page",
             command=lambda: master.switch_frame(HomePage),
         ).pack()
+        self.image = None
+        self.filter_image = None
 
     def configure(self):
         self.canvas = Canvas(self, width=650, height=350)
@@ -87,17 +89,31 @@ class GlassFilterPage(tk.Frame):
             text="open image",
             command=self.open_image_and_display_in_canvas,
         ).pack()
+        self.apply_filter_button = tk.Button(
+            self,
+            text="apply filter",
+            command=self.apply_snapchap_filter,
+        ).pack()
 
     def open_image_and_display_in_canvas(self):
-        path = filedialog.askopenfilename()
+        MAX_SIZE = (590, 350)
+        self.path = filedialog.askopenfilename()
 
-        print(path)
-
-        if path:
-            self.image = Image.open(path)
-            self.image = self.image.resize((500, 490), Image.LANCZOS)
+        if self.path:
+            self.image = Image.open(self.path)
+            self.image.thumbnail(MAX_SIZE)
             self.image = ImageTk.PhotoImage(self.image)
-            self.canvas.create_image(0, 0, image=self.image, anchor="nw")
+            self.canvas.create_image(0, 1, image=self.image, anchor="nw")
+
+    def apply_snapchap_filter(self):
+        from image_processor import glasses_filter
+
+        if not self.image:
+            messagebox.showerror("Alrt", "Please open image first.")
+        else:
+            self.filter_image = glasses_filter(self.path)
+            print(self.filter_image)
+
 
 class CopyRightPage(tk.Frame):
     """
@@ -113,7 +129,6 @@ class CopyRightPage(tk.Frame):
         text_box = Text(self, height=12, width=45)
         text_box.pack(expand=True)
         text_box.insert("end", self.copyright)
-        # text_box.config(state="disabled")
         tk.Button(
             self,
             text="Return to Home page",
