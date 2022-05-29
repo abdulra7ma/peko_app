@@ -1,17 +1,28 @@
 import tkinter as tk
 from tkinter import Canvas, Text, filedialog, messagebox
 
+import customtkinter as ctk
 from PIL import Image, ImageTk
 
+ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
+ctk.set_default_color_theme(
+    "green"
+)  # Themes: blue (default), dark-blue, green
 
-class PekoApp(tk.Tk):
+
+class PekoApp(ctk.CTk):
     def __init__(self):
-        tk.Tk.__init__(self)
+        ctk.CTk.__init__(self)
+        ctk.CTk.geometry(self, "650x610")
+        ctk.CTk.minsize(self, width=650, height=560)
         self._frame = None
         self.switch_frame(HomePage)
 
     def switch_frame(self, frame_class):
-        """Destroys current frame and replaces it with a new one."""
+        """
+        Destroys current frame and replaces it with a new one.
+        """
+
         new_frame = frame_class(self)
         if self._frame is not None:
             self._frame.destroy()
@@ -19,87 +30,87 @@ class PekoApp(tk.Tk):
         self._frame.pack()
 
 
-class HomePage(tk.Frame):
+class HomePage(ctk.CTkFrame):
     def __init__(self, master):
-        tk.Frame.__init__(self, master)
-        tk.Label(self, text="This is the start page").pack(
-            side="top", fill="x", pady=10
-        )
+        ctk.CTkFrame.__init__(self, master)
+        ctk.CTkLabel(
+            self, text="Peko app", text_font=("Bahnschrift", 28)
+        ).pack(padx=5, pady=15, side=tk.TOP)
         self.uni_logo = Image.open("images/ala-too_logo.jpeg")
         self.uni_logo = ImageTk.PhotoImage(image=self.uni_logo)
-        tk.Label(
+        ctk.CTkLabel(
             self,
             image=self.uni_logo,
-        ).pack()
-        tk.Button(
+        ).pack(padx=5, pady=15, side=tk.TOP)
+        ctk.CTkButton(
             self,
             text="Open page one",
             command=lambda: master.switch_frame(PageOne),
-        ).pack()
-        tk.Button(
+        ).pack(padx=5, pady=15, side=tk.TOP)
+        ctk.CTkButton(
             self,
             text="glasses filter",
             command=lambda: master.switch_frame(GlassFilterPage),
-        ).pack()
-        tk.Button(
+        ).pack(padx=5, pady=15, side=tk.TOP)
+        ctk.CTkButton(
             self,
             text="black&white filter",
             command=lambda: master.switch_frame(BlackAndWhitePage),
-        ).pack()
-        
-        tk.Button(
+        ).pack(padx=5, pady=15, side=tk.TOP)
+
+        ctk.CTkButton(
             self,
             text="Copyright",
             command=lambda: master.switch_frame(CopyRightPage),
-        ).pack()
+        ).pack(padx=5, pady=15, side=tk.BOTTOM)
 
 
-class PageOne(tk.Frame):
+class PageOne(ctk.CTkFrame):
     def __init__(self, master):
-        tk.Frame.__init__(self, master)
-        tk.Label(self, text="This is page one").pack(
-            side="top", fill="x", pady=10
-        )
-        tk.Button(
+        ctk.CTkFrame.__init__(self, master)
+        ctk.CTkLabel(
+            self, text="This is page one", text_font=("Bahnschrift", 28)
+        ).pack(side="top", fill="x", pady=10)
+        ctk.CTkButton(
             self,
             text="Return to start page",
             command=lambda: master.switch_frame(HomePage),
         ).pack()
 
 
-class GlassFilterPage(tk.Frame):
+class GlassFilterPage(ctk.CTkFrame):
     """
     Applies shapchat glass filter to the given image
     """
 
     def __init__(self, master):
-        tk.Frame.__init__(self, master)
-        tk.Label(self, text="Snapchat glasses filter").pack(
-            side="top", fill="x", pady=20
-        )
+        ctk.CTkFrame.__init__(self, master)
+        ctk.CTkLabel(
+            self, text="Snapchat glasses filter", text_font=("Bahnschrift", 28)
+        ).pack(side=tk.TOP, fill="x", pady=20)
         self.configure()
-        tk.Button(
+        ctk.CTkButton(
             self,
             text="Return to Home page",
             command=lambda: master.switch_frame(HomePage),
-        ).pack()
+        ).pack(padx=5, pady=15, side=tk.BOTTOM)
         self.image = None
         self.filter_image = None
 
     def configure(self):
         self.canvas = Canvas(self, width=650, height=350)
-        self.canvas.pack()
+        self.canvas.pack(padx=5, pady=10, side=tk.TOP)
 
-        self.open_image_button = tk.Button(
+        self.open_image_button = ctk.CTkButton(
             self,
             text="open image",
             command=self.open_image_and_display_in_canvas,
-        ).pack()
-        self.apply_filter_button = tk.Button(
+        ).pack(padx=5, pady=10, side=tk.TOP)
+        self.apply_filter_button = ctk.CTkButton(
             self,
             text="apply filter",
             command=self.apply_snapchap_filter,
-        ).pack()
+        ).pack(padx=50, pady=10, side=tk.TOP)
 
     def open_image_and_display_in_canvas(self):
         MAX_SIZE = (590, 350)
@@ -109,7 +120,12 @@ class GlassFilterPage(tk.Frame):
             self.image = Image.open(self.path)
             self.image.thumbnail(MAX_SIZE)
             self.image = ImageTk.PhotoImage(self.image)
-            self.canvas.create_image(0, 1, image=self.image, anchor="nw")
+            self.canvas.create_image(
+                self.image.width() / 2,
+                self.image.height() / 2,
+                image=self.image,
+                anchor=tk.CENTER,
+            )
 
     def apply_snapchap_filter(self):
         from image_processor import glasses_filter
@@ -121,18 +137,18 @@ class GlassFilterPage(tk.Frame):
             print(self.filter_image)
 
 
-class BlackAndWhitePage(tk.Frame):
+class BlackAndWhitePage(ctk.CTkFrame):
     """
     Applies black & white filter to the given image
     """
 
     def __init__(self, master):
-        tk.Frame.__init__(self, master)
-        tk.Label(self, text="Black & White filter").pack(
+        ctk.CTkFrame.__init__(self, master)
+        ctk.CTkLabel(self, text="Black & White filter").pack(
             side="top", fill="x", pady=20
         )
         self.configure()
-        tk.Button(
+        ctk.CTkButton(
             self,
             text="Return to Home page",
             command=lambda: master.switch_frame(HomePage),
@@ -144,12 +160,12 @@ class BlackAndWhitePage(tk.Frame):
         self.canvas = Canvas(self, width=650, height=350)
         self.canvas.pack()
 
-        self.open_image_button = tk.Button(
+        self.open_image_button = ctk.CTkButton(
             self,
             text="open image",
             command=self.open_image_and_display_in_canvas,
         ).pack()
-        self.apply_filter_button = tk.Button(
+        self.apply_filter_button = ctk.CTkButton(
             self,
             text="apply filter",
         ).pack()
@@ -164,21 +180,22 @@ class BlackAndWhitePage(tk.Frame):
             self.image = ImageTk.PhotoImage(self.image)
             self.canvas.create_image(0, 1, image=self.image, anchor="nw")
 
-class CopyRightPage(tk.Frame):
+
+class CopyRightPage(ctk.CTkFrame):
     """
     Peko app copyright page.
     """
 
     def __init__(self, master):
-        tk.Frame.__init__(self, master)
-        tk.Label(self, text="Copyright Page").pack(
+        ctk.CTkFrame.__init__(self, master)
+        ctk.CTkLabel(self, text="Copyright Page").pack(
             side="top", fill="x", pady=10
         )
         # copy text area
         text_box = Text(self, height=12, width=45)
         text_box.pack(expand=True)
         text_box.insert("end", self.copyright)
-        tk.Button(
+        ctk.CTkButton(
             self,
             text="Return to Home page",
             command=lambda: master.switch_frame(HomePage),
