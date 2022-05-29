@@ -3,6 +3,7 @@ from tkinter import Canvas, Text, filedialog, messagebox
 
 import customtkinter as ctk
 from PIL import Image, ImageTk
+from image_processor import black_and_white
 
 ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
 ctk.set_default_color_theme(
@@ -134,13 +135,14 @@ class GlassFilterPage(ctk.CTkFrame):
             messagebox.showerror("Alrt", "Please open image first.")
         else:
             self.filter_image = glasses_filter(self.path)
-            print(self.filter_image)
 
 
 class BlackAndWhitePage(ctk.CTkFrame):
     """
     Applies black & white filter to the given image
     """
+
+    MAX_SIZE = (650, 350)
 
     def __init__(self, master):
         ctk.CTkFrame.__init__(self, master)
@@ -154,7 +156,7 @@ class BlackAndWhitePage(ctk.CTkFrame):
             command=lambda: master.switch_frame(HomePage),
         ).pack()
         self.image = None
-        self.filter_image = None
+        self.filtered_image = None
 
     def configure(self):
         self.canvas = Canvas(self, width=650, height=350)
@@ -168,17 +170,34 @@ class BlackAndWhitePage(ctk.CTkFrame):
         self.apply_filter_button = ctk.CTkButton(
             self,
             text="apply filter",
+            command=self.apply_filter,
         ).pack()
 
     def open_image_and_display_in_canvas(self):
-        MAX_SIZE = (590, 350)
         self.path = filedialog.askopenfilename()
 
         if self.path:
             self.image = Image.open(self.path)
-            self.image.thumbnail(MAX_SIZE)
-            self.image = ImageTk.PhotoImage(self.image)
-            self.canvas.create_image(0, 1, image=self.image, anchor="nw")
+            self.image.thumbnail(self.MAX_SIZE)
+            self.set_canvas_photo(self.image)
+
+    def set_canvas_photo(self, image):
+        self.tk_image = ImageTk.PhotoImage(image)
+        self.canvas.create_image(0, 1, image=self.tk_image, anchor="nw")
+
+    def update_canvas_photo(self, image):
+        w, h = image.size
+
+        # if the image exceeds the max size
+        # than we gonna resize it
+        if w > self.MAX_SIZE[0] or h > self.MAX_SIZE[1]:
+            image.thumbnail(self.MAX_SIZE)
+
+        self.set_canvas_photo(image)
+
+    def apply_filter(self):
+        self.filtered_image = black_and_white(self.image)
+        self.update_canvas_photo(self.filtered_image)
 
 
 class CopyRightPage(ctk.CTkFrame):

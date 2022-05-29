@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tkinter import filedialog
 import cvzone
+from PIL import Image
+from uuid import uuid4
 
 
 def glasses_filter(image):
@@ -36,3 +38,20 @@ def glasses_filter(image):
     #             ]
 
     return img_copy
+
+
+def black_and_white(image: Image):
+    """
+    Converts an image into a black and white
+    """
+    
+
+    og_img = cv2.imread(image.filename)
+    wb_img = cv2.cvtColor(og_img, cv2.COLOR_BGR2GRAY)
+
+    ## save the newly created image locally
+    # image_name = str(uuid4()) + "_bw." + image.format.lower()
+    # image_path = f"images/bw/{image_name}"
+    # cv2.imwrite(image_path, wb_img)
+
+    return Image.fromarray(wb_img)
