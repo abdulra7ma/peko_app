@@ -2,3 +2,4 @@ Pipfile
 Pipfile.lock
 modern_tkinter_ex.py
 test_tk.py
+images/peko_supernova/*
