@@ -23,7 +23,7 @@ class PekoApp(ctk.CTk):
     def __init__(self):
         ctk.CTk.__init__(self)
         ctk.CTk.geometry(self, "650x610")
-        ctk.CTk.minsize(self, width=650, height=560)
+        ctk.CTk.minsize(self, width=650, height=650)
         self._frame = None
         self.switch_frame(HomePage)
 
@@ -53,12 +53,12 @@ class HomePage(ctk.CTkFrame):
         ).pack(padx=5, pady=15, side=tk.TOP)
         ctk.CTkButton(
             self,
-            text="Image Meta extactor",
+            text="Image Meta Extactor",
             command=lambda: master.switch_frame(PageOne),
         ).pack(padx=5, pady=15, side=tk.TOP)
         ctk.CTkButton(
             self,
-            text="glasses filter",
+            text="Peko SuperNova filter",
             command=lambda: master.switch_frame(GlassFilterPage),
         ).pack(padx=5, pady=15, side=tk.TOP)
         ctk.CTkButton(
@@ -155,7 +155,7 @@ class FliterPageBase(ctk.CTkFrame):
         ctk.CTkLabel(
             self, text=frame_label, text_font=("Bahnschrift", 28)
         ).pack(side="top", fill="x", pady=20)
-        self.configure()
+        self._configure()
         ctk.CTkButton(
             self,
             text="Return to Home page",
@@ -164,14 +164,14 @@ class FliterPageBase(ctk.CTkFrame):
         self.image: Image = None
         self.filtered_image: Image = None
 
-    def configure(self):
+    def _configure(self):
         self.canvas = Canvas(self, width=650, height=350)
         self.canvas.pack(padx=5, pady=10, side=tk.TOP)
 
         self.open_image_button = ctk.CTkButton(
             self,
             text="open image",
-            command=self.open_image_and_display_in_canvas,
+            command=self._open_image_and_display_in_canvas,
         ).pack(padx=5, pady=10, side=tk.TOP)
         self.apply_filter_button = ctk.CTkButton(
             self,
@@ -184,7 +184,7 @@ class FliterPageBase(ctk.CTkFrame):
             command=self.downlaod,
         ).pack(padx=50, pady=10, side=tk.TOP)
 
-    def open_image_and_display_in_canvas(self):
+    def _open_image_and_display_in_canvas(self):
         self.path = filedialog.askopenfilename()
 
         if self.path:
@@ -309,12 +309,10 @@ class CopyRightPage(ctk.CTkFrame):
         return f"""
         {copyright_symbol} Dear Reader,
         Thank you for giving your
-        Love and Support to PythonGuides.
-        PythonGuides is now available on 
-        YouTube with the same name.
+        Love and Support to Peko app.
 
         Thanks & Regards,
-        Team PythonGuides
+        Team Peko
         """
 
 

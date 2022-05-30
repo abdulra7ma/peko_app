@@ -114,7 +114,7 @@ def Peko_super_nova_image_filter(image_path):
     image = FImage(image_path)
 
     # apply the mutiple filters to the image
-    image.apply(Saturation(20), Contrast(25), Brightness(15))
+    image.apply(Saturation(15), Contrast(35), Brightness(15))
 
     # image_name = str(uuid4()) + "_peko_supernova." + image_path.split(".")[-1]
     # image_path = f"images/peko_supernova/{image_name}"
