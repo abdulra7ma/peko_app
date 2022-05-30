@@ -1,8 +1,10 @@
+from uuid import uuid4
+
 import cv2
 import cvzone
-import matplotlib.pyplot as plt
+from fimage import FImage
+from fimage.filters import Brightness, Contrast, Saturation
 from PIL import Image
-from PIL.ExifTags import TAGS
 
 from helpers import convert_from_cv2_to_image, convert_from_image_to_cv2
 
@@ -106,3 +108,16 @@ def image_meta_data_extractor(image: Image):
     }
 
     return info_dict
+
+
+def Peko_super_nova_image_filter(image_path):
+    image = FImage(image_path)
+
+    # apply the mutiple filters to the image
+    image.apply(Saturation(20), Contrast(25), Brightness(15))
+
+    # image_name = str(uuid4()) + "_peko_supernova." + image_path.split(".")[-1]
+    # image_path = f"images/peko_supernova/{image_name}"
+    # image.save(image_path)
+
+    return image.image

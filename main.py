@@ -7,7 +7,11 @@ import customtkinter as ctk
 from PIL import Image, ImageTk, UnidentifiedImageError
 from PIL.ExifTags import TAGS
 
-from image_processor import black_and_white, image_meta_data_extractor
+from image_processor import (
+    black_and_white,
+    image_meta_data_extractor,
+    Peko_super_nova_image_filter,
+)
 
 ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
 ctk.set_default_color_theme(
@@ -157,8 +161,8 @@ class FliterPageBase(ctk.CTkFrame):
             text="Return to Home page",
             command=lambda: master.switch_frame(HomePage),
         ).pack()
-        self.image = None
-        self.filtered_image = None
+        self.image: Image = None
+        self.filtered_image: Image = None
 
     def configure(self):
         self.canvas = Canvas(self, width=650, height=350)
@@ -174,14 +178,25 @@ class FliterPageBase(ctk.CTkFrame):
             text="apply filter",
             command=self.apply_filter,
         ).pack(padx=50, pady=10, side=tk.TOP)
+        self.apply_filter_button = ctk.CTkButton(
+            self,
+            text="Download",
+            command=self.downlaod,
+        ).pack(padx=50, pady=10, side=tk.TOP)
 
     def open_image_and_display_in_canvas(self):
         self.path = filedialog.askopenfilename()
 
         if self.path:
-            self.image = Image.open(self.path)
-            self.image.thumbnail(self.MAX_SIZE)
-            self.set_canvas_photo(self.image)
+            try:
+                self.image = Image.open(self.path)
+                self.image.thumbnail(self.MAX_SIZE)
+                self.set_canvas_photo(self.image)
+            except UnidentifiedImageError:
+                messagebox.showerror(
+                    "Image Not Identified",
+                    "Sorry, we can not identify the image format. Please open another one",
+                )
 
     def set_canvas_photo(self, image):
         self.tk_image = ImageTk.PhotoImage(image)
@@ -215,19 +230,39 @@ class FliterPageBase(ctk.CTkFrame):
         msg = msg if msg is not None else "Please open image first."
         messagebox.showerror("Alrt", msg)
 
+    def downlaod(self):
+        if not self.filtered_image:
+            self.raise_alert_message("Apply filter first")
+        else:
+            allowed_files = [
+                (
+                    f"{self.image.format.upper()} Image",
+                    f"*.{self.image.format.lower()}",
+                )
+            ]
+
+            file = asksaveasfile(
+                filetypes=allowed_files, defaultextension=allowed_files
+            )
+
+            self.filtered_image.save(file.name)
+
 
 class GlassFilterPage(FliterPageBase):
     """
     Applies shapchat glass filter to the given image
     """
 
-    def apply_filter(self):
-        from image_processor import glasses_filter
+    def __init__(self, master, frame_label="Peko Frame"):
+        super().__init__(master, "Peko SuperNova")
 
+    def apply_filter(self):
         if not self.image:
             self.raise_alert_message()
         else:
-            self.filter_image = glasses_filter(self.image)
+            self.filtered_image = Peko_super_nova_image_filter(
+                self.image.filename
+            )
             self.update_canvas_photo(self.filtered_image)
 
 
