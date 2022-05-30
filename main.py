@@ -1,9 +1,13 @@
+from re import L
 import tkinter as tk
 from tkinter import Canvas, Text, filedialog, messagebox
+from tkinter.filedialog import asksaveasfile
 
 import customtkinter as ctk
-from PIL import Image, ImageTk
-from image_processor import black_and_white
+from PIL import Image, ImageTk, UnidentifiedImageError
+from PIL.ExifTags import TAGS
+
+from image_processor import black_and_white, image_meta_data_extractor
 
 ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
 ctk.set_default_color_theme(
@@ -45,7 +49,7 @@ class HomePage(ctk.CTkFrame):
         ).pack(padx=5, pady=15, side=tk.TOP)
         ctk.CTkButton(
             self,
-            text="Open page one",
+            text="Image Meta extactor",
             command=lambda: master.switch_frame(PageOne),
         ).pack(padx=5, pady=15, side=tk.TOP)
         ctk.CTkButton(
@@ -70,33 +74,91 @@ class PageOne(ctk.CTkFrame):
     def __init__(self, master):
         ctk.CTkFrame.__init__(self, master)
         ctk.CTkLabel(
-            self, text="This is page one", text_font=("Bahnschrift", 28)
+            self, text="Image Meta Extractor", text_font=("Bahnschrift", 28)
         ).pack(side="top", fill="x", pady=10)
+        self.canvas_configure()
+        ctk.CTkButton(
+            self, text="Select image", command=self._open_image
+        ).pack(padx=50, pady=10, side=tk.TOP)
+        ctk.CTkButton(
+            self, text="Download image data", command=self._save_file
+        ).pack(padx=50, pady=10, side=tk.TOP)
         ctk.CTkButton(
             self,
             text="Return to start page",
             command=lambda: master.switch_frame(HomePage),
-        ).pack()
+        ).pack(padx=50, pady=10, side=tk.TOP)
+
+    def canvas_configure(self) -> None:
+        self.canvas = Canvas(self, width=650, height=350)
+        self.canvas.pack(padx=5, pady=10, side=tk.TOP)
+
+    def draw_meta_info(self, meta_dict: dict) -> None:
+        x = 250
+        y = 60
+        for k, v in meta_dict.items():
+            self.canvas.create_text(
+                x,
+                y,
+                text=k + " >>>  " + str(v) + "\n",
+                font=("Helvetica 15 bold"),
+            )
+            y += 30
+
+    def _open_image(self):
+        self.path = filedialog.askopenfilename()
+
+        if self.path:
+            try:
+                self.image = Image.open(self.path)
+                self.image_meta_data = image_meta_data_extractor(self.image)
+                self.draw_meta_info(self.image_meta_data)
+            except UnidentifiedImageError:
+                messagebox.showerror(
+                    "Image Not Identified",
+                    "Sorry, we can not identify the image format. Please open another one",
+                )
+
+    def _save_file(self):
+        allowed_files = [
+            ("Text Document", "*.txt"),
+        ]
+        if not self.image:
+            messagebox.showerror("Alrt", "Selet an image first")
+        else:
+            file = asksaveasfile(
+                filetypes=allowed_files, defaultextension=allowed_files
+            )
+
+            for k, v in self.image_meta_data.items():
+                try:
+                    file.write(k + " >>> " + str(v) + "\n")
+                except AttributeError:
+                    pass
+
+            file.close()
 
 
-class GlassFilterPage(ctk.CTkFrame):
+class FliterPageBase(ctk.CTkFrame):
     """
-    Applies shapchat glass filter to the given image
+    Fliter Page Base class that implements basic functionality
     """
 
-    def __init__(self, master):
+    MAX_SIZE = (650, 350)
+
+    def __init__(self, master, frame_label="Peko Frame"):
         ctk.CTkFrame.__init__(self, master)
         ctk.CTkLabel(
-            self, text="Snapchat glasses filter", text_font=("Bahnschrift", 28)
-        ).pack(side=tk.TOP, fill="x", pady=20)
+            self, text=frame_label, text_font=("Bahnschrift", 28)
+        ).pack(side="top", fill="x", pady=20)
         self.configure()
         ctk.CTkButton(
             self,
             text="Return to Home page",
             command=lambda: master.switch_frame(HomePage),
-        ).pack(padx=5, pady=15, side=tk.BOTTOM)
+        ).pack()
         self.image = None
-        self.filter_image = None
+        self.filtered_image = None
 
     def configure(self):
         self.canvas = Canvas(self, width=650, height=350)
@@ -110,68 +172,8 @@ class GlassFilterPage(ctk.CTkFrame):
         self.apply_filter_button = ctk.CTkButton(
             self,
             text="apply filter",
-            command=self.apply_snapchap_filter,
-        ).pack(padx=50, pady=10, side=tk.TOP)
-
-    def open_image_and_display_in_canvas(self):
-        MAX_SIZE = (590, 350)
-        self.path = filedialog.askopenfilename()
-
-        if self.path:
-            self.image = Image.open(self.path)
-            self.image.thumbnail(MAX_SIZE)
-            self.image = ImageTk.PhotoImage(self.image)
-            self.canvas.create_image(
-                self.image.width() / 2,
-                self.image.height() / 2,
-                image=self.image,
-                anchor=tk.CENTER,
-            )
-
-    def apply_snapchap_filter(self):
-        from image_processor import glasses_filter
-
-        if not self.image:
-            messagebox.showerror("Alrt", "Please open image first.")
-        else:
-            self.filter_image = glasses_filter(self.path)
-
-
-class BlackAndWhitePage(ctk.CTkFrame):
-    """
-    Applies black & white filter to the given image
-    """
-
-    MAX_SIZE = (650, 350)
-
-    def __init__(self, master):
-        ctk.CTkFrame.__init__(self, master)
-        ctk.CTkLabel(self, text="Black & White filter").pack(
-            side="top", fill="x", pady=20
-        )
-        self.configure()
-        ctk.CTkButton(
-            self,
-            text="Return to Home page",
-            command=lambda: master.switch_frame(HomePage),
-        ).pack()
-        self.image = None
-        self.filtered_image = None
-
-    def configure(self):
-        self.canvas = Canvas(self, width=650, height=350)
-        self.canvas.pack()
-
-        self.open_image_button = ctk.CTkButton(
-            self,
-            text="open image",
-            command=self.open_image_and_display_in_canvas,
-        ).pack()
-        self.apply_filter_button = ctk.CTkButton(
-            self,
-            text="apply filter",
             command=self.apply_filter,
-        ).pack()
+        ).pack(padx=50, pady=10, side=tk.TOP)
 
     def open_image_and_display_in_canvas(self):
         self.path = filedialog.askopenfilename()
@@ -183,7 +185,12 @@ class BlackAndWhitePage(ctk.CTkFrame):
 
     def set_canvas_photo(self, image):
         self.tk_image = ImageTk.PhotoImage(image)
-        self.canvas.create_image(0, 1, image=self.tk_image, anchor="nw")
+        self.canvas.create_image(
+            self.tk_image.width() / 2,
+            self.tk_image.height() / 2,
+            image=self.tk_image,
+            anchor=tk.CENTER,
+        )
 
     def update_canvas_photo(self, image):
         w, h = image.size
@@ -196,8 +203,48 @@ class BlackAndWhitePage(ctk.CTkFrame):
         self.set_canvas_photo(image)
 
     def apply_filter(self):
-        self.filtered_image = black_and_white(self.image)
-        self.update_canvas_photo(self.filtered_image)
+        """
+        This method must be overwritten
+        """
+        if not self.image:
+            self.raise_alert_message()
+
+        raise NotImplementedError("Overwrite this function on your class")
+
+    def raise_alert_message(self, msg=None):
+        msg = msg if msg is not None else "Please open image first."
+        messagebox.showerror("Alrt", msg)
+
+
+class GlassFilterPage(FliterPageBase):
+    """
+    Applies shapchat glass filter to the given image
+    """
+
+    def apply_filter(self):
+        from image_processor import glasses_filter
+
+        if not self.image:
+            self.raise_alert_message()
+        else:
+            self.filter_image = glasses_filter(self.image)
+            self.update_canvas_photo(self.filtered_image)
+
+
+class BlackAndWhitePage(FliterPageBase):
+    """
+    Applies black & white filter to the given image
+    """
+
+    def __init__(self, master, frame_label="Peko Frame"):
+        super().__init__(master, "Black & White")
+
+    def apply_filter(self):
+        if not self.image:
+            self.raise_alert_message()
+        else:
+            self.filtered_image = black_and_white(self.image)
+            self.update_canvas_photo(self.filtered_image)
 
 
 class CopyRightPage(ctk.CTkFrame):
